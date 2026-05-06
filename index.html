@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GHL Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════════
+   THEME TOKENS
+═══════════════════════════════════════════════ */
+        :root {
+            /* Light Mode */
+            --bg: #f4f6fb;
+            --bg-panel: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card2: #f9fafc;
+            --border: #e4e8f0;
+            --border2: #d0d6e4;
+            --shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 32px rgba(0, 0, 0, 0.06);
+
+            --teal: #0d9e7e;
+            --teal-lt: #e6f7f3;
+            --blue: #2563eb;
+            --blue-lt: #eff6ff;
+            --violet: #7c3aed;
+            --violet-lt: #f5f3ff;
+            --amber: #d97706;
+            --amber-lt: #fffbeb;
+            --rose: #dc2626;
+            --rose-lt: #fef2f2;
+            --slate: #475569;
+
+            --text: #0f172a;
+            --text-2: #374151;
+            --muted: #64748b;
+            --dim: #94a3b8;
+            --subtle: #e2e8f0;
+
+            --grid-color: rgba(0, 0, 0, 0.05);
+            --font: 'Inter', system-ui, sans-serif;
+            --mono: 'IBM Plex Mono', monospace;
+            --r: 12px;
+            --r-sm: 8px;
+        }
+
+        [data-theme="dark"] {
+            --bg: #090d18;
+            --bg-panel: #0f1526;
+            --bg-card: #141c2e;
+            --bg-card2: #1a2340;
+            --border: rgba(255, 255, 255, 0.07);
+            --border2: rgba(255, 255, 255, 0.12);
+            --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+
+            --teal: #06d6a0;
+            --teal-lt: rgba(6, 214, 160, 0.12);
+            --blue: #4895ef;
+            --blue-lt: rgba(72, 149, 239, 0.12);
+            --violet: #9b5de5;
+            --violet-lt: rgba(155, 93, 229, 0.12);
+            --amber: #f9c74f;
+            --amber-lt: rgba(249, 199, 79, 0.12);
+            --rose: #ef476f;
+            --rose-lt: rgba(239, 71, 111, 0.12);
+            --slate: #94a3b8;
+
+            --text: #f0f4ff;
+            --text-2: #c9d1e8;
+            --muted: #8b97b8;
+            --dim: #4b5880;
+            --subtle: rgba(255, 255, 255, 0.06);
+
+            --grid-color: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 15px;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 28px 48px;
+            transition: background 0.25s, color 0.25s;
+            line-height: 1.5;
+        }
+
+        /* ═══════════════════════════════════════════════
+   TOP NAV BAR
+═══════════════════════════════════════════════ */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--teal), var(--blue));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .brand-text h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+        }
+
+        .brand-text p {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 1px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Live badge */
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--teal-lt);
+            border: 1px solid var(--teal);
+            border-radius: 50px;
+            padding: 5px 13px;
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--teal);
+            font-weight: 500;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--teal);
+            box-shadow: 0 0 6px var(--teal);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0.3
+            }
+        }
+
+        /* Dark mode toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border2);
+            border-radius: 50px;
+            padding: 6px 14px 6px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--mono);
+            font-size: 0.67rem;
+            color: var(--muted);
+            font-weight: 500;
+            user-select: none;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--teal);
+            color: var(--teal);
+        }
+
+        .theme-toggle .icon {
+            font-size: 0.9rem;
+            transition: transform 0.4s;
+        }
+
+        .theme-toggle:hover .icon {
+            transform: rotate(20deg);
+        }
+
+        /* ═══════════════════════════════════════════════
+   SECTION DIVIDERS
+═══════════════════════════════════════════════ */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 28px 0 16px;
+        }
+
+        .section-header h2 {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+        }
+
+        .section-header::before {
+            content: '';
+            display: block;
+            width: 3px;
+            height: 16px;
+            border-radius: 2px;
+            background: var(--teal);
+            flex-shrink: 0;
+        }
+
+        .section-header::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ═══════════════════════════════════════════════
+   FILTER BAR
+═══════════════════════════════════════════════ */
+        .filter-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .filter-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .filter-lbl {
+            font-family: var(--mono);
+            font-size: 0.63rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.8px;
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        .filter-divider {
+            width: 1px;
+            height: 22px;
+            background: var(--border2);
+            flex-shrink: 0;
+        }
+
+        /* Date range inputs */
+        .date-range-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .date-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border2);
+            border-radius: var(--r-sm);
+            padding: 5px 10px;
+            transition: border-color 0.15s;
+        }
+
+        .date-input-wrap:focus-within {
+            border-color: var(--teal);
+        }
+
+        .date-input-wrap label {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .date-input-wrap input[type="date"] {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+            color: var(--text);
+            cursor: pointer;
+            min-width: 110px;
+            color-scheme: light dark;
+        }
+
+        .date-sep {
+            font-family: var(--mono);
+            font-size: 0.7rem;
+            color: var(--dim);
+        }
+
+        /* Preset pills */
+        .presets {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .preset-lbl {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
+
+        .pill {
+            font-family: var(--mono);
+            font-size: 0.67rem;
+            padding: 4px 13px;
+            border-radius: 50px;
+            border: 1px solid var(--border2);
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-weight: 400;
+        }
+
+        .pill:hover {
+            border-color: var(--teal);
+            color: var(--teal);
+            background: var(--teal-lt);
+        }
+
+        .pill.active {
+            background: var(--teal);
+            border-color: var(--teal);
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Active range display */
+        .filter-active-range {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--teal);
+            background: var(--teal-lt);
+            border: 1px solid var(--teal);
+            border-radius: 50px;
+            padding: 4px 12px;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+
+        /* Apply button */
+        .apply-btn {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: var(--r-sm);
+            background: var(--teal);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .apply-btn:hover {
+            opacity: 0.85;
+        }
+
+        .clear-btn {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            padding: 5px 12px;
+            border-radius: var(--r-sm);
+            background: transparent;
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .clear-btn:hover {
+            border-color: var(--rose);
+            color: var(--rose);
+        }
+
+        /* ═══════════════════════════════════════════════
+   GRID LAYOUT
+═══════════════════════════════════════════════ */
+        .row {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .r3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .r2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .r1 {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 900px) {
+
+            .r3,
+            .r2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════
+   CARDS
+═══════════════════════════════════════════════ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 20px 22px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.2s, border-color 0.2s, background 0.25s;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border2);
+        }
+
+        /* Colored top stripe */
+        .stripe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--r) var(--r) 0 0;
+        }
+
+        .s-teal {
+            background: var(--teal);
+        }
+
+        .s-blue {
+            background: var(--blue);
+        }
+
+        .s-violet {
+            background: var(--violet);
+        }
+
+        .s-amber {
+            background: var(--amber);
+        }
+
+        .s-rose {
+            background: var(--rose);
+        }
+
+        /* Metric card layout */
+        .metric-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+
+        .mi-teal {
+            background: var(--teal-lt);
+            color: var(--teal);
+        }
+
+        .mi-blue {
+            background: var(--blue-lt);
+            color: var(--blue);
+        }
+
+        .mi-violet {
+            background: var(--violet-lt);
+            color: var(--violet);
+        }
+
+        .mi-amber {
+            background: var(--amber-lt);
+            color: var(--amber);
+        }
+
+        .mi-rose {
+            background: var(--rose-lt);
+            color: var(--rose);
+        }
+
+        .metric-lbl {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .metric-val {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            line-height: 1;
+            color: var(--text);
+        }
+
+        .metric-sub {
+            font-family: var(--mono);
+            font-size: 0.67rem;
+            color: var(--muted);
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .up {
+            color: var(--teal);
+        }
+
+        .down {
+            color: var(--rose);
+        }
+
+        /* Section titles inside cards */
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-2);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--teal);
+            flex-shrink: 0;
+        }
+
+        /* ═══════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════ */
+        .chart-box {
+            position: relative;
+        }
+
+        .chart-box canvas {
+            width: 100% !important;
+        }
+
+        /* ═══════════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════════ */
+        .tbl-wrap {
+            overflow: auto;
+            max-height: 300px;
+            border-radius: var(--r-sm);
+            border: 1px solid var(--border);
+        }
+
+        .tbl-wrap::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .tbl-wrap::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .tbl-wrap::-webkit-scrollbar-thumb {
+            background: var(--dim);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--mono);
+            font-size: 0.72rem;
+        }
+
+        thead th {
+            background: var(--subtle);
+            color: var(--muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            padding: 10px 14px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            border-bottom: 1px solid var(--border2);
+            white-space: nowrap;
+            font-size: 0.65rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.1s;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--subtle);
+        }
+
+        tbody td {
+            padding: 9px 14px;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        tbody td:first-child {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════
+   BADGES
+═══════════════════════════════════════════════ */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 9px;
+            border-radius: 50px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .b-email {
+            background: var(--blue-lt);
+            color: var(--blue);
+        }
+
+        .b-sms {
+            background: var(--violet-lt);
+            color: var(--violet);
+        }
+
+        .b-sent {
+            background: var(--teal-lt);
+            color: var(--teal);
+        }
+
+        .b-received {
+            background: var(--amber-lt);
+            color: var(--amber);
+        }
+
+        .b-failed {
+            background: var(--rose-lt);
+            color: var(--rose);
+        }
+
+        .b-inbound {
+            background: var(--blue-lt);
+            color: var(--blue);
+        }
+
+        .b-outbound {
+            background: var(--violet-lt);
+            color: var(--violet);
+        }
+
+        /* ═══════════════════════════════════════════════
+   SCALE / PROGRESS BARS
+═══════════════════════════════════════════════ */
+        .scale-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .scale-lbl {
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--muted);
+            width: 170px;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .scale-track {
+            flex: 1;
+            height: 8px;
+            background: var(--subtle);
+            border-radius: 50px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .scale-fill {
+            height: 100%;
+            border-radius: 50px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .scale-num {
+            font-family: var(--mono);
+            font-size: 0.67rem;
+            color: var(--text);
+            width: 36px;
+            text-align: right;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════
+   DOMAIN TAG PILLS
+═══════════════════════════════════════════════ */
+        .domain-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .domain-pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            color: var(--text-2);
+            transition: all 0.15s;
+        }
+
+        .domain-pill:hover {
+            border-color: var(--teal);
+            background: var(--teal-lt);
+        }
+
+        .domain-pill .cnt {
+            background: var(--teal);
+            color: #fff;
+            border-radius: 50px;
+            padding: 1px 7px;
+            font-size: 0.6rem;
+            font-weight: 700;
+        }
+
+        /* ═══════════════════════════════════════════════
+   HOUR HEATMAP CELLS
+═══════════════════════════════════════════════ */
+        .heatmap {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .heatmap-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .heatmap-lbl {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .heat-cell {
+            flex: 1;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--mono);
+            font-size: 0.68rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            transition: transform 0.15s;
+            cursor: default;
+        }
+
+        .heat-cell:hover {
+            transform: scale(1.05);
+        }
+
+        /* ═══════════════════════════════════════════════
+   CONTACT LIST MINI
+═══════════════════════════════════════════════ */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .contact-row:last-child {
+            border-bottom: none;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .contact-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .contact-domain {
+            font-family: var(--mono);
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+
+        .contact-badges {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+        }
+
+        /* ═══════════════════════════════════════════════
+   SUMMARY STAT ROW (inside card)
+═══════════════════════════════════════════════ */
+        .stat-mini-row {
+            display: flex;
+            gap: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            overflow: hidden;
+        }
+
+        .stat-mini {
+            flex: 1;
+            padding: 12px 14px;
+            text-align: center;
+            border-right: 1px solid var(--border);
+        }
+
+        .stat-mini:last-child {
+            border-right: none;
+        }
+
+        .stat-mini-val {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .stat-mini-lbl {
+            font-family: var(--mono);
+            font-size: 0.6rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════ TOP NAV ═══════════════ -->
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-logo">G</div>
+            <div class="brand-text">
+                <h1>GHL Analytics Dashboard</h1>
+                <p>Contacts &amp; Communications · May 2026</p>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="live-badge"><span class="dot"></span>Live Dataset</div>
+            <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+                <span class="icon" id="themeIcon">☀️</span>
+                <span id="themeLabel">Light</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════ FILTER BAR ═══════════════ -->
+    <div class="filter-bar">
+        <div class="filter-top">
+            <span class="filter-lbl">📅 Date Range</span>
+            <div class="filter-divider"></div>
+            <div class="date-range-group">
+                <div class="date-input-wrap">
+                    <label for="dateFrom">From</label>
+                    <input type="date" id="dateFrom" value="2026-05-01" min="2026-05-01" max="2026-05-31" />
+                </div>
+                <span class="date-sep">→</span>
+                <div class="date-input-wrap">
+                    <label for="dateTo">To</label>
+                    <input type="date" id="dateTo" value="2026-05-31" min="2026-05-01" max="2026-05-31" />
+                </div>
+                <button class="apply-btn" onclick="applyDateRange()">Apply</button>
+                <button class="clear-btn" onclick="clearFilter()">Reset</button>
+            </div>
+            <span class="filter-active-range" id="activeRangeLabel">May 1 – May 31, 2026</span>
+        </div>
+        <div class="presets">
+            <span class="preset-lbl">Quick:</span>
+            <button class="pill active" data-preset="all" onclick="applyPreset(this,'2026-05-01','2026-05-31')">Full
+                Month</button>
+            <button class="pill" data-preset="first" onclick="applyPreset(this,'2026-05-01','2026-05-15')">First
+                Half</button>
+            <button class="pill" data-preset="second" onclick="applyPreset(this,'2026-05-16','2026-05-31')">Second
+                Half</button>
+            <button class="pill" data-preset="week1" onclick="applyPreset(this,'2026-05-01','2026-05-07')">Week
+                1</button>
+            <button class="pill" data-preset="week2" onclick="applyPreset(this,'2026-05-08','2026-05-14')">Week
+                2</button>
+            <button class="pill" data-preset="week3" onclick="applyPreset(this,'2026-05-15','2026-05-21')">Week
+                3</button>
+            <button class="pill" data-preset="week4" onclick="applyPreset(this,'2026-05-22','2026-05-31')">Week
+                4+</button>
+            <button class="pill" data-preset="contacts" onclick="applyPreset(this,'2026-05-04','2026-05-04')">Contacts
+                Day</button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+     SECTION B: COMMUNICATIONS
+══════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2>📨 Communications Overview</h2>
+    </div>
+
+    <!-- Row 1: 3 Metric Cards (Comms) -->
+    <div class="row r3">
+        <div class="card">
+            <div class="stripe s-teal"></div>
+            <div class="metric-icon mi-teal">📊</div>
+            <div class="metric-lbl">Total Messages</div>
+            <div class="metric-val" id="m-total">—</div>
+            <div class="metric-sub"><span class="up">↑</span><span id="m-total-sub">—</span></div>
+        </div>
+        <div class="card">
+            <div class="stripe s-blue"></div>
+            <div class="metric-icon mi-blue">📧</div>
+            <div class="metric-lbl">Email</div>
+            <div class="metric-val" id="m-email" style="color:var(--blue)">—</div>
+            <div class="metric-sub"><span id="m-email-sub">—</span></div>
+        </div>
+        <div class="card">
+            <div class="stripe s-violet"></div>
+            <div class="metric-icon mi-violet">💬</div>
+            <div class="metric-lbl">SMS</div>
+            <div class="metric-val" id="m-sms" style="color:var(--violet)">—</div>
+            <div class="metric-sub"><span id="m-sms-sub">—</span></div>
+        </div>
+    </div>
+
+    <!-- Row 2: 2 Pie Charts (Comms) -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Channel Distribution</div>
+            <div class="chart-box" style="height:240px"><canvas id="pieChannel"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Status Breakdown</div>
+            <div class="chart-box" style="height:240px"><canvas id="pieStatus"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Row 3: All records table + Line chart -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>All Message Records</div>
+            <div class="tbl-wrap">
+                <table id="tblAll">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Channel</th>
+                            <th>Direction</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Daily Volume Trend</div>
+            <div class="chart-box" style="height:270px"><canvas id="lineChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Row 4: Bar chart + Direction table -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Weekly Email vs SMS</div>
+            <div class="chart-box" style="height:270px"><canvas id="barChart"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Direction Summary by Day</div>
+            <div class="tbl-wrap">
+                <table id="tblDir">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Inbound</th>
+                            <th>Outbound</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 5: Email table + SMS table -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Email Records</div>
+            <div class="tbl-wrap">
+                <table id="tblEmail">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Direction</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>SMS Records</div>
+            <div class="tbl-wrap">
+                <table id="tblSms">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Direction</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 6: Scale chart -->
+    <div class="row r1">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Message Status Rate by Channel &amp; Direction
+            </div>
+            <div id="scaleChart"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+     SECTION A: CONTACTS
+══════════════════════════════════════════ -->
+    <div class="section-header">
+        <h2>👥 Contacts Overview</h2>
+    </div>
+
+    <!-- Row 1: 3 Metric Cards (Contacts) -->
+    <div class="row r3">
+        <div class="card">
+            <div class="stripe s-teal"></div>
+            <div class="metric-icon mi-teal">👥</div>
+            <div class="metric-lbl">Total Contacts</div>
+            <div class="metric-val" id="c-total">—</div>
+            <div class="metric-sub"><span class="up">↑</span><span id="c-total-sub">—</span></div>
+        </div>
+        <div class="card">
+            <div class="stripe s-blue"></div>
+            <div class="metric-icon mi-blue">📱</div>
+            <div class="metric-lbl">With Phone</div>
+            <div class="metric-val" id="c-phone" style="color:var(--blue)">—</div>
+            <div class="metric-sub"><span id="c-phone-sub">—</span></div>
+        </div>
+        <div class="card">
+            <div class="stripe s-violet"></div>
+            <div class="metric-icon mi-violet">✉️</div>
+            <div class="metric-lbl">With Email</div>
+            <div class="metric-val" id="c-email" style="color:var(--violet)">—</div>
+            <div class="metric-sub"><span id="c-email-sub">—</span></div>
+        </div>
+    </div>
+
+    <!-- Row 2: 2 Pie Charts (Contacts) -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Contact Profile Completeness</div>
+            <div class="chart-box" style="height:240px"><canvas id="pieCompleteness"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Email Domain Distribution</div>
+            <div class="chart-box" style="height:240px"><canvas id="pieDomains"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Row 3: Contacts table + Hourly intake line chart -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Contact Directory</div>
+            <div class="tbl-wrap">
+                <table id="tblContacts">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Domain</th>
+                            <th>Phone</th>
+                            <th>Added</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Contacts Added by Hour</div>
+            <div class="chart-box" style="height:270px"><canvas id="barHours"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Row 4: Domain breakdown bar + completeness table -->
+    <div class="row r2">
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Top Email Domains</div>
+            <div class="chart-box" style="height:270px"><canvas id="barDomains"></canvas></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span class="card-title-dot"></span>Data Completeness Summary</div>
+            <div style="margin-bottom:16px">
+                <div class="stat-mini-row">
+                    <div class="stat-mini">
+                        <div class="stat-mini-val" id="cs-total">—</div>
+                        <div class="stat-mini-lbl">Total</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-val" style="color:var(--teal)" id="cs-both">—</div>
+                        <div class="stat-mini-lbl">Email+Phone</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-mini-val" style="color:var(--rose)" id="cs-missing">—</div>
+                        <div class="stat-mini-lbl">Missing Phone</div>
+                    </div>
+                </div>
+            </div>
+            <div id="domainScaleChart"></div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+    <script>
+        /* ================================================================
+           CONTACTS DATA — sourced from GHL_Contacts_Report.xlsx (100 records)
+           TODO: Replace with: const CONTACTS = await fetch('YOUR-GHL-API/contacts').then(r=>r.json());
+        ================================================================ */
+        const CONTACTS = [{ "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Hana", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Yelissa", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Sheri", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Billy", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Yvette", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Ronald", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Chris", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "mac.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Betty", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Randi", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Leslie", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Efrain", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Disha", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Emilia", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Steven", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Allison", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Joanne", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Ariel", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Anthony", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "icloud.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Suzanne", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "aol.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Jane", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Teresita", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Karma", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "icloud.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Keith", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Stephen", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Janelle", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Joseph", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Maxwell", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Carolyn", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Bahareh", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Kemi", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 17, "first_name": "Daiona", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Marsha", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Diane", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "msn.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Taylor", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "aol.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Mario", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Roberto", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Seth", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Doty", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Alex", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Jesse", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "msn.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Rachel", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Derell", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Branden", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Deanna", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Debra", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "msn.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Sean", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Arthur", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Linda", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Matthew", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Jacqueline", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 13, "first_name": "Stacey", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Michael", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Elizabeth", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "rocketmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Roberto", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Mahsa", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Katherine", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "verizon.net" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Ellen", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Clive", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Manisha", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Christina", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Patrizk", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "msn.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Jane", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Perla", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Tahirih", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Courtenay", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Ruby", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Diana", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Barbara", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "comcast.net" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Bing", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Jonathon", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "icloud.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 9, "first_name": "Bernadette", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Victoria", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Canava", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Natalia", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Vicky", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "verizon.net" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Erika", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Lisa", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Ashley", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "John", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "David", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Dorothy", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Liliana", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Sergio", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Enrique", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "hotmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "May", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Cherita", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Carol", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Daniel", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Kay", "has_email": 1, "has_phone": 0, "has_tags": 0, "domain": "msn.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Santiago", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Sheila", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Farjana", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Virginia", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Feranmi", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Eddie", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "yahoo.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Ricky", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Kennedi", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Jennifer", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Taylor", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }, { "date": "2026-05-04", "month": "2026-05", "day_of_week": "Monday", "hour": 5, "first_name": "Rommel", "has_email": 1, "has_phone": 1, "has_tags": 0, "domain": "gmail.com" }];
+
+        /* ================================================================
+           COMMUNICATIONS DATA — sourced from GHL_Conversation_Report.xlsx
+           TODO: Replace with: const COMMS = await fetch('YOUR-GHL-API/conversations').then(r=>r.json());
+        ================================================================ */
+        const COMMS = [{ "date": "2026-05-31", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-27", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-12", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-19", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-27", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-24", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-10", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-07", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-27", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-01", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-16", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-28", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-17", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-21", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-03", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-05", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-22", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-11", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-06", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-23", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-28", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-19", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-21", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-01", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-09", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-17", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-26", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-30", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-11", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-18", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-29", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-23", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-23", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-11", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-19", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-11", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-30", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-09", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-13", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-19", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-30", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-26", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-30", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-16", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-06", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-20", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-06", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-04", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-08", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-29", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-12", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-14", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-29", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-15", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-10", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-28", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-15", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-09", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-11", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-31", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-06", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-02", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-05", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-09", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-22", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-19", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-15", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-24", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-27", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-04", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-10", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-30", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-31", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-22", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-07", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-17", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-15", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-15", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-30", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-11", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-23", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-10", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-29", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-09", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-13", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-17", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-09", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-31", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-20", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-13", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-23", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-01", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-10", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-03", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-17", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-08", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-28", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-29", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-11", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-31", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-31", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-31", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-31", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-17", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-12", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-28", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-18", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-09", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-08", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-06", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-11", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-28", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-14", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-10", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-14", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-11", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-10", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-05", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-20", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-26", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-06", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-06", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-04", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-24", "direction": "inbound", "status": "received", "channel": "sms" }, { "date": "2026-05-05", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-02", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-18", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-11", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-09", "direction": "inbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-07", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-05", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-22", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-30", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-31", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-19", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-19", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-03", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-04", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-17", "direction": "outbound", "status": "sent", "channel": "email" }, { "date": "2026-05-27", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-02", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-28", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-16", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-30", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-23", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-11", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-01", "direction": "outbound", "status": "sent", "channel": "sms" }, { "date": "2026-05-19", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-31", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-10", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-05", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-05", "direction": "outbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-31", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-02", "direction": "inbound", "status": "received", "channel": "email" }, { "date": "2026-05-07", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-21", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-31", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-17", "direction": "outbound", "status": "failed", "channel": "email" }, { "date": "2026-05-02", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-07", "direction": "outbound", "status": "received", "channel": "sms" }, { "date": "2026-05-29", "direction": "inbound", "status": "failed", "channel": "sms" }, { "date": "2026-05-18", "direction": "inbound", "status": "sent", "channel": "email" }, { "date": "2026-05-23", "direction": "outbound", "status": "received", "channel": "email" }, { "date": "2026-05-08", "direction": "inbound", "status": "failed", "channel": "email" }, { "date": "2026-05-03", "direction": "outbound", "status": "received", "channel": "sms" }];
+
+        /* ═══════════════════════════════════════
+           THEME TOGGLE
+        ═══════════════════════════════════════ */
+        let isDark = false;
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').textContent = isDark ? '🌙' : '☀️';
+            document.getElementById('themeLabel').textContent = isDark ? 'Dark' : 'Light';
+            // Redraw all charts after theme change
+            renderWithCurrentRange();
+        }
+
+        /* ═══════════════════════════════════════
+           CHART.JS CONFIG
+        ═══════════════════════════════════════ */
+        function getThemeColors() {
+            const s = getComputedStyle(document.documentElement);
+            return {
+                text: s.getPropertyValue('--muted').trim(),
+                grid: s.getPropertyValue('--grid-color').trim(),
+                teal: s.getPropertyValue('--teal').trim(),
+                blue: s.getPropertyValue('--blue').trim(),
+                violet: s.getPropertyValue('--violet').trim(),
+                amber: s.getPropertyValue('--amber').trim(),
+                rose: s.getPropertyValue('--rose').trim(),
+            };
+        }
+
+        Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+        Chart.defaults.font.size = 11;
+
+        const AVATAR_COLORS = ['#0d9e7e', '#2563eb', '#7c3aed', '#d97706', '#dc2626', '#0891b2', '#65a30d', '#c2410c'];
+
+        let CH = {};
+
+        /* ═══════════════════════════════════════
+           HELPERS
+        ═══════════════════════════════════════ */
+        const fmtD = d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const cnt = (arr, k, v) => arr.filter(r => r[k] === v).length;
+        const pct = (n, t) => t ? ((n / t) * 100).toFixed(1) + '%' : '0%';
+
+        /* ═══════════════════════════════════════
+           DATE RANGE FILTER
+        ═══════════════════════════════════════ */
+        let activeFrom = '2026-05-01';
+        let activeTo = '2026-05-31';
+
+        function filterByRange(arr) {
+            return arr.filter(r => r.date >= activeFrom && r.date <= activeTo);
+        }
+        function filterComms() { return filterByRange(COMMS); }
+        function filterContacts() { return filterByRange(CONTACTS); }
+
+        function fmtLabel(d) {
+            return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+        function updateRangeLabel() {
+            const from = fmtLabel(activeFrom), to = fmtLabel(activeTo);
+            document.getElementById('activeRangeLabel').textContent =
+                activeFrom === activeTo ? from : `${from} – ${to}`;
+        }
+        function clearPresetActive() {
+            document.querySelectorAll('.pill[data-preset]').forEach(p => p.classList.remove('active'));
+        }
+        function applyPreset(btn, from, to) {
+            clearPresetActive();
+            btn.classList.add('active');
+            activeFrom = from; activeTo = to;
+            document.getElementById('dateFrom').value = from;
+            document.getElementById('dateTo').value = to;
+            updateRangeLabel();
+            render();
+        }
+        function applyDateRange() {
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+            if (!from || !to) return;
+            if (from > to) {
+                document.getElementById('dateFrom').value = to;
+                document.getElementById('dateTo').value = from;
+                activeFrom = to; activeTo = from;
+            } else {
+                activeFrom = from; activeTo = to;
+            }
+            clearPresetActive();
+            updateRangeLabel();
+            render();
+        }
+        function clearFilter() {
+            activeFrom = '2026-05-01'; activeTo = '2026-05-31';
+            document.getElementById('dateFrom').value = activeFrom;
+            document.getElementById('dateTo').value = activeTo;
+            clearPresetActive();
+            document.querySelector('.pill[data-preset="all"]').classList.add('active');
+            updateRangeLabel();
+            render();
+        }
+        function renderWithCurrentRange() { render(); }
+
+        // Also trigger on Enter key in date inputs
+        document.addEventListener('DOMContentLoaded', () => {
+            ['dateFrom', 'dateTo'].forEach(id => {
+                document.getElementById(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') applyDateRange(); });
+            });
+        });
+
+        /* ═══════════════════════════════════════
+           CONTACTS SECTION
+        ═══════════════════════════════════════ */
+        function renderContactCards(cd) {
+            const t = cd.length, ph = cd.filter(r => r.has_phone).length, em = cd.filter(r => r.has_email).length;
+            document.getElementById('c-total').textContent = t;
+            document.getElementById('c-phone').textContent = ph;
+            document.getElementById('c-email').textContent = em;
+            document.getElementById('c-total-sub').innerHTML = `${pct(t, CONTACTS.length)} of dataset`;
+            document.getElementById('c-phone-sub').innerHTML = `<span style="color:var(--blue)">${pct(ph, t)}</span> have phone`;
+            document.getElementById('c-email-sub').innerHTML = `<span style="color:var(--violet)">${pct(em, t)}</span> have email`;
+            document.getElementById('cs-total').textContent = t;
+            document.getElementById('cs-both').textContent = cd.filter(r => r.has_phone && r.has_email).length;
+            document.getElementById('cs-missing').textContent = cd.filter(r => !r.has_phone).length;
+        }
+
+        function renderPieCompleteness(cd) {
+            const T = cd.length;
+            const both = cnt(cd.filter(r => r.has_email), 'has_phone', 1);
+            const emailOnly = cd.filter(r => r.has_email && !r.has_phone).length;
+            const phoneOnly = cd.filter(r => !r.has_email && r.has_phone).length;
+            const neither = cd.filter(r => !r.has_email && !r.has_phone).length;
+            const tc = getThemeColors();
+            if (CH.pc2) CH.pc2.destroy();
+            CH.pc2 = new Chart(document.getElementById('pieCompleteness'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Email + Phone', 'Email Only', 'Phone Only', 'Neither'],
+                    datasets: [{
+                        data: [both, emailOnly, phoneOnly, neither],
+                        backgroundColor: [tc.teal, tc.blue, tc.violet, tc.rose], borderWidth: 0, hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, font: { size: 11 } } },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.label}: ${ctx.raw} (${pct(ctx.raw, T)})` } }
+                    }
+                }
+            });
+        }
+
+        function renderPieDomains(cd) {
+            const dm = {};
+            cd.forEach(r => { dm[r.domain] = (dm[r.domain] || 0) + 1; });
+            const sorted = Object.entries(dm).sort((a, b) => b[1] - a[1]).slice(0, 7);
+            const tc = getThemeColors();
+            const colors = [tc.teal, tc.blue, tc.violet, tc.amber, tc.rose, '#0891b2', '#65a30d'];
+            if (CH.pd) CH.pd.destroy();
+            CH.pd = new Chart(document.getElementById('pieDomains'), {
+                type: 'doughnut',
+                data: {
+                    labels: sorted.map(x => x[0]), datasets: [{
+                        data: sorted.map(x => x[1]),
+                        backgroundColor: colors, borderWidth: 0, hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true, font: { size: 10 } } },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.label}: ${ctx.raw} (${pct(ctx.raw, cd.length)})` } }
+                    }
+                }
+            });
+        }
+
+        function renderBarHours(cd) {
+            const hours = { 5: 0, 9: 0, 13: 0, 17: 0 };
+            cd.forEach(r => { if (hours[r.hour] !== undefined) hours[r.hour]++; });
+            const labels = ['5 AM', '9 AM', '1 PM', '5 PM'];
+            const vals = [5, 9, 13, 17].map(h => hours[h]);
+            const tc = getThemeColors();
+            if (CH.bh) CH.bh.destroy();
+            CH.bh = new Chart(document.getElementById('barHours'), {
+                type: 'bar',
+                data: {
+                    labels, datasets: [{
+                        label: 'Contacts Added', data: vals,
+                        backgroundColor: [tc.teal, tc.blue, tc.violet, tc.amber],
+                        borderRadius: 8, borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: tc.grid } }, y: { grid: { color: tc.grid }, beginAtZero: true, ticks: { stepSize: 5 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function renderBarDomains(cd) {
+            const dm = {};
+            cd.forEach(r => { dm[r.domain] = (dm[r.domain] || 0) + 1; });
+            const sorted = Object.entries(dm).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const tc = getThemeColors();
+            const colors = [tc.teal, tc.blue, tc.violet, tc.amber, tc.rose, '#0891b2', '#65a30d', '#c2410c'];
+            if (CH.bd) CH.bd.destroy();
+            CH.bd = new Chart(document.getElementById('barDomains'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(x => x[0]), datasets: [{
+                        label: 'Contacts', data: sorted.map(x => x[1]),
+                        backgroundColor: colors, borderRadius: 6, borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: { x: { grid: { color: tc.grid }, beginAtZero: true }, y: { grid: { color: 'transparent' } } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.raw} contacts` } }
+                    }
+                }
+            });
+        }
+
+        function renderTblContacts(cd) {
+            const tb = document.querySelector('#tblContacts tbody'); tb.innerHTML = '';
+            cd.forEach((r, i) => {
+                const av = AVATAR_COLORS[i % AVATAR_COLORS.length];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+      <td style="color:var(--dim)">${i + 1}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div style="width:24px;height:24px;border-radius:50%;background:${av};display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;color:#fff;flex-shrink:0">${r.first_name[0]}</div>
+        ${r.first_name}
+      </div></td>
+      <td style="color:var(--muted)">${r.domain}</td>
+      <td>${r.has_phone ? '<span style="color:var(--teal)">✓</span>' : '<span style="color:var(--rose)">✗</span>'}</td>
+      <td style="color:var(--muted)">${fmtD(r.date)} ${r.hour}:00</td>`;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderDomainScale(cd) {
+            const dm = {};
+            cd.forEach(r => { dm[r.domain] = (dm[r.domain] || 0) + 1; });
+            const sorted = Object.entries(dm).sort((a, b) => b[1] - a[1]).slice(0, 8);
+            const max = sorted[0]?.[1] || 1;
+            const grads = ['linear-gradient(90deg,#0d9e7e,#2563eb)', 'linear-gradient(90deg,#2563eb,#7c3aed)',
+                'linear-gradient(90deg,#7c3aed,#d97706)', 'linear-gradient(90deg,#d97706,#dc2626)',
+                'linear-gradient(90deg,#0891b2,#0d9e7e)', 'linear-gradient(90deg,#65a30d,#0891b2)',
+                'linear-gradient(90deg,#c2410c,#d97706)', 'linear-gradient(90deg,#2563eb,#0d9e7e)'];
+            const el = document.getElementById('domainScaleChart'); el.innerHTML = '';
+            sorted.forEach(([domain, n], i) => {
+                const p = ((n / max) * 100).toFixed(1);
+                el.insertAdjacentHTML('beforeend', `
+      <div class="scale-row">
+        <div class="scale-lbl">${domain}</div>
+        <div class="scale-track"><div class="scale-fill" style="width:${p}%;background:${grads[i]}"></div></div>
+        <div class="scale-num">${n}</div>
+      </div>`);
+            });
+        }
+
+        /* ═══════════════════════════════════════
+           COMMS SECTION
+        ═══════════════════════════════════════ */
+        function renderCommCards(d) {
+            const t = d.length, e = cnt(d, 'channel', 'email'), s = cnt(d, 'channel', 'sms');
+            document.getElementById('m-total').textContent = t;
+            document.getElementById('m-email').textContent = e;
+            document.getElementById('m-sms').textContent = s;
+            document.getElementById('m-total-sub').innerHTML = `${pct(t, COMMS.length)} of dataset`;
+            document.getElementById('m-email-sub').innerHTML = `<span style="color:var(--blue)">${pct(e, t)}</span> of filtered`;
+            document.getElementById('m-sms-sub').innerHTML = `<span style="color:var(--violet)">${pct(s, t)}</span> of filtered`;
+        }
+
+        function renderPieChannel(d) {
+            const e = cnt(d, 'channel', 'email'), s = cnt(d, 'channel', 'sms');
+            const tc = getThemeColors();
+            if (CH.pc) CH.pc.destroy();
+            CH.pc = new Chart(document.getElementById('pieChannel'), {
+                type: 'doughnut',
+                data: { labels: ['Email', 'SMS'], datasets: [{ data: [e, s], backgroundColor: [tc.blue, tc.violet], borderWidth: 0, hoverOffset: 6 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.label}: ${ctx.raw} (${pct(ctx.raw, e + s)})` } }
+                    }
+                }
+            });
+        }
+
+        function renderPieStatus(d) {
+            const sent = cnt(d, 'status', 'sent'), recv = cnt(d, 'status', 'received'), fail = cnt(d, 'status', 'failed');
+            const tc = getThemeColors();
+            if (CH.ps) CH.ps.destroy();
+            CH.ps = new Chart(document.getElementById('pieStatus'), {
+                type: 'doughnut',
+                data: { labels: ['Sent', 'Received', 'Failed'], datasets: [{ data: [sent, recv, fail], backgroundColor: [tc.teal, tc.amber, tc.rose], borderWidth: 0, hoverOffset: 6 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, cutout: '62%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 14, usePointStyle: true } },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.label}: ${ctx.raw}` } }
+                    }
+                }
+            });
+        }
+
+        function renderLine(d) {
+            const m = {};
+            d.forEach(r => { if (!m[r.date]) m[r.date] = { email: 0, sms: 0 }; m[r.date][r.channel]++; });
+            const dates = Object.keys(m).sort();
+            const tc = getThemeColors();
+            if (CH.ln) CH.ln.destroy();
+            CH.ln = new Chart(document.getElementById('lineChart'), {
+                type: 'line',
+                data: {
+                    labels: dates.map(fmtD), datasets: [
+                        { label: 'Email', data: dates.map(d => m[d].email), borderColor: tc.blue, backgroundColor: isDark ? 'rgba(72,149,239,0.08)' : 'rgba(37,99,235,0.07)', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 },
+                        { label: 'SMS', data: dates.map(d => m[d].sms), borderColor: tc.violet, backgroundColor: isDark ? 'rgba(155,93,229,0.08)' : 'rgba(124,58,237,0.07)', fill: true, tension: 0.4, pointRadius: 3, borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: tc.grid }, ticks: { maxTicksLimit: 10, maxRotation: 0 } }, y: { grid: { color: tc.grid }, beginAtZero: true } },
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14 } } }
+                }
+            });
+        }
+
+        function renderBar(d) {
+            const w = {};
+            d.forEach(r => {
+                const dt = new Date(r.date + 'T00:00:00'), wk = `W${Math.ceil(dt.getDate() / 7)} May`;
+                if (!w[wk]) w[wk] = { email: 0, sms: 0 }; w[wk][r.channel]++;
+            });
+            const weeks = Object.keys(w).sort();
+            const tc = getThemeColors();
+            if (CH.br) CH.br.destroy();
+            CH.br = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: {
+                    labels: weeks, datasets: [
+                        { label: 'Email', data: weeks.map(k => w[k].email), backgroundColor: isDark ? 'rgba(72,149,239,0.75)' : 'rgba(37,99,235,0.7)', borderRadius: 6, borderSkipped: false },
+                        { label: 'SMS', data: weeks.map(k => w[k].sms), backgroundColor: isDark ? 'rgba(155,93,229,0.75)' : 'rgba(124,58,237,0.7)', borderRadius: 6, borderSkipped: false }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { grid: { color: tc.grid } }, y: { grid: { color: tc.grid }, beginAtZero: true } },
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14 } } }
+                }
+            });
+        }
+
+        function renderTblAll(d) {
+            const tb = document.querySelector('#tblAll tbody'); tb.innerHTML = '';
+            [...d].sort((a, b) => b.date.localeCompare(a.date)).forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td style="color:var(--dim)">${i + 1}</td><td>${fmtD(r.date)}</td>
+      <td><span class="badge b-${r.channel}">${r.channel}</span></td>
+      <td><span class="badge b-${r.direction}">${r.direction}</span></td>
+      <td><span class="badge b-${r.status}">${r.status}</span></td>`;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderTblDir(d) {
+            const m = {};
+            d.forEach(r => { if (!m[r.date]) m[r.date] = { in: 0, out: 0 }; r.direction === 'inbound' ? m[r.date].in++ : m[r.date].out++; });
+            const tb = document.querySelector('#tblDir tbody'); tb.innerHTML = '';
+            Object.keys(m).sort((a, b) => b.localeCompare(a)).forEach(date => {
+                const { in: i, out: o } = m[date];
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${fmtD(date)}</td><td style="color:var(--blue)">${i}</td>
+      <td style="color:var(--violet)">${o}</td><td style="color:var(--text);font-weight:600">${i + o}</td>`;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderTblEmail(d) {
+            const tb = document.querySelector('#tblEmail tbody'); tb.innerHTML = '';
+            d.filter(r => r.channel === 'email').sort((a, b) => b.date.localeCompare(a.date)).forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td style="color:var(--dim)">${i + 1}</td><td>${fmtD(r.date)}</td>
+      <td><span class="badge b-${r.direction}">${r.direction}</span></td>
+      <td><span class="badge b-${r.status}">${r.status}</span></td>`;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderTblSms(d) {
+            const tb = document.querySelector('#tblSms tbody'); tb.innerHTML = '';
+            d.filter(r => r.channel === 'sms').sort((a, b) => b.date.localeCompare(a.date)).forEach((r, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td style="color:var(--dim)">${i + 1}</td><td>${fmtD(r.date)}</td>
+      <td><span class="badge b-${r.direction}">${r.direction}</span></td>
+      <td><span class="badge b-${r.status}">${r.status}</span></td>`;
+                tb.appendChild(tr);
+            });
+        }
+
+        function renderScaleChart(d) {
+            const segs = [
+                { lbl: 'Email · Sent', fn: r => r.channel === 'email' && r.status === 'sent', grad: 'linear-gradient(90deg,#0d9e7e,#2563eb)' },
+                { lbl: 'Email · Received', fn: r => r.channel === 'email' && r.status === 'received', grad: 'linear-gradient(90deg,#2563eb,#7c3aed)' },
+                { lbl: 'Email · Failed', fn: r => r.channel === 'email' && r.status === 'failed', grad: 'linear-gradient(90deg,#dc2626,#d97706)' },
+                { lbl: 'SMS · Sent', fn: r => r.channel === 'sms' && r.status === 'sent', grad: 'linear-gradient(90deg,#0d9e7e,#7c3aed)' },
+                { lbl: 'SMS · Received', fn: r => r.channel === 'sms' && r.status === 'received', grad: 'linear-gradient(90deg,#d97706,#0d9e7e)' },
+                { lbl: 'SMS · Failed', fn: r => r.channel === 'sms' && r.status === 'failed', grad: 'linear-gradient(90deg,#dc2626,#7c3aed)' },
+                { lbl: 'Inbound Total', fn: r => r.direction === 'inbound', grad: 'linear-gradient(90deg,#2563eb,#0d9e7e)' },
+                { lbl: 'Outbound Total', fn: r => r.direction === 'outbound', grad: 'linear-gradient(90deg,#7c3aed,#2563eb)' },
+            ];
+            const max = d.length || 1;
+            const el = document.getElementById('scaleChart'); el.innerHTML = '';
+            segs.forEach(s => {
+                const n = d.filter(s.fn).length, p = ((n / max) * 100).toFixed(1);
+                el.insertAdjacentHTML('beforeend', `
+      <div class="scale-row">
+        <div class="scale-lbl">${s.lbl}</div>
+        <div class="scale-track"><div class="scale-fill" style="width:${p}%;background:${s.grad}"></div></div>
+        <div class="scale-num">${n}</div>
+      </div>`);
+            });
+        }
+
+        /* ═══════════════════════════════════════
+           MAIN RENDER
+        ═══════════════════════════════════════ */
+        function render() {
+            Chart.defaults.color = getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
+            const cd = filterContacts();
+            const md = filterComms();
+            // Contacts
+            renderContactCards(cd);
+            renderPieCompleteness(cd);
+            renderPieDomains(cd);
+            renderBarHours(cd);
+            renderBarDomains(cd);
+            renderTblContacts(cd);
+            renderDomainScale(cd);
+            // Comms
+            renderCommCards(md);
+            renderPieChannel(md);
+            renderPieStatus(md);
+            renderLine(md);
+            renderBar(md);
+            renderTblAll(md);
+            renderTblDir(md);
+            renderTblEmail(md);
+            renderTblSms(md);
+            renderScaleChart(md);
+        }
+
+        render();
+    </script>
+</body>
+
+</html>
