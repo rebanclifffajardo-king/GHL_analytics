@@ -1,6 +1,9 @@
-// app/page.tsx — Next.js App Router page entry point
-import Dashboard from '@/components/Dashboard';
+// app/page.tsx
+// Root page — renders the tabbed Genesis dashboard.
+// The tab state lives here so both tabs share the same
+// Topbar and theme without re-mounting it.
+import TabShell from '@/components/TabShell';
 
 export default function Home() {
-  return <Dashboard />;
+  return <TabShell />;
 }

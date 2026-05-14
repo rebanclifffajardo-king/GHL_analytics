@@ -459,3 +459,90 @@ tbody td:first-child { color: var(--text); font-weight: 500; }
   font-family: var(--mono); font-size: 0.72rem;
   flex-direction: column; gap: 8px;
 }
+
+/* ═══ TAB NAVIGATION ══════════════════════════════════════ */
+.tab-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 9px 20px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.tab-btn:hover {
+  color: var(--text);
+  background: var(--subtle);
+}
+
+.tab-btn.tab-active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+  background: var(--teal-lt);
+  font-weight: 600;
+}
+
+.tab-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.tab-badge {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 50px;
+  background: var(--subtle);
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.tab-btn.tab-active .tab-badge {
+  background: var(--teal);
+  color: #fff;
+}
+
+/* Journey search input inside filter bar */
+.journey-search-wrap input::placeholder {
+  color: var(--dim);
+  font-style: italic;
+}
+
+/* Journey visitor table — prevent email column overflow */
+.visitor-email-cell {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.65rem;
+}
+
+@media (max-width: 900px) {
+  .tab-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab-btn { padding: 8px 14px; font-size: 0.68rem; }
+}

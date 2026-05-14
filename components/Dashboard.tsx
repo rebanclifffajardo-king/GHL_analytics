@@ -1,16 +1,13 @@
 // components/Dashboard.tsx
 //
-// Main dashboard page — orchestrates all sections, components,
-// data loading, and theme state. Uses the useDashboardData hook
-// for all data and filter logic.
+// Main dashboard panel. Theme is owned by TabShell (parent)
+// and passed in via the isDark prop — no useTheme() here.
 'use client';
 
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
-import { useTheme } from '@/lib/hooks/useTheme';
 import { pct } from '@/lib/utils/analytics';
 
 // Layout
-import Topbar from '@/components/layout/Topbar';
 import SectionHeader from '@/components/layout/SectionHeader';
 
 // UI
@@ -31,9 +28,9 @@ import {
 } from '@/components/tables/CommTables';
 import { ContactTable } from '@/components/tables/ContactTables';
 
-export default function Dashboard() {
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === 'dark';
+interface DashboardProps { isDark: boolean; }
+
+export default function Dashboard({ isDark }: DashboardProps) {
 
   const {
     loading,
@@ -77,8 +74,6 @@ export default function Dashboard() {
 
   return (
     <>
-      <Topbar theme={theme} onToggleTheme={toggleTheme} />
-
       {/* ─── Error Banner ─── */}
       {error && (
         <div className="error-banner">
