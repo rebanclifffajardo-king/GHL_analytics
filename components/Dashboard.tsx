@@ -1,5 +1,6 @@
 // components/Dashboard.tsx
 //
+<<<<<<< HEAD
 // Main dashboard panel. Theme is owned by TabShell (parent)
 // and passed in via the isDark prop — no useTheme() here.
 'use client';
@@ -27,10 +28,19 @@ import {
   ChannelTable,
 } from '@/components/tables/CommTables';
 import { ContactTable } from '@/components/tables/ContactTables';
+=======
+// Main Dashboard tab — renders the Conversations Overview only.
+// The Contacts Overview has been promoted to its own tab (ContactsOverview).
+// Theme is owned by TabShell and passed via isDark prop.
+'use client';
+
+import ConversationsOverview from '@/components/conversations/ConversationsOverview';
+>>>>>>> 5d0e27b (separate contacts tab)
 
 interface DashboardProps { isDark: boolean; }
 
 export default function Dashboard({ isDark }: DashboardProps) {
+<<<<<<< HEAD
 
   const {
     loading,
@@ -347,4 +357,7 @@ export default function Dashboard({ isDark }: DashboardProps) {
       )}
     </>
   );
+=======
+  return <ConversationsOverview isDark={isDark} />;
+>>>>>>> 5d0e27b (separate contacts tab)
 }
