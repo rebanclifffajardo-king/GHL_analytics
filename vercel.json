@@ -1,16 +1,7 @@
 {
-<<<<<<< HEAD
-    "framework": "nextjs",
-    "buildCommand": "next build",
-    "devCommand": "next dev",
-    "installCommand": "npm install",
-    "outputDirectory": ".next"
-}
-=======
   "framework": "nextjs",
   "buildCommand": "next build",
   "devCommand": "next dev",
   "installCommand": "npm install",
   "outputDirectory": ".next"
 }
->>>>>>> 5d0e27b (separate contacts tab)
